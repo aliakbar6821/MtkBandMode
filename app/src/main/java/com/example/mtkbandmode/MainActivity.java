@@ -6,7 +6,6 @@ import android.telephony.SubscriptionInfo;
 import android.telephony.SubscriptionManager;
 import android.widget.Button;
 import android.widget.LinearLayout;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -47,19 +46,22 @@ public class MainActivity extends AppCompatActivity {
         LinearLayout container = findViewById(R.id.sim_container);
         container.removeAllViews();
 
-        SubscriptionManager sm = getSystemService(SubscriptionManager.class);
-        List<SubscriptionInfo> subs = sm.getActiveSubscriptionInfoList();
+        SubscriptionManager sm = (SubscriptionManager) getSystemService(SubscriptionManager.class);
+        if (sm == null) {
+            addSimButton(container, "SIM 1 (Slot 0)", 0);
+            return;
+        }
 
+        List<SubscriptionInfo> subs = sm.getActiveSubscriptionInfoList();
         if (subs == null || subs.isEmpty()) {
-            // Fallback: single slot button
             addSimButton(container, "SIM 1 (Slot 0)", 0);
             return;
         }
 
         for (SubscriptionInfo info : subs) {
-            String label = "SIM " + info.getSimSlotIndex() + 1
-                    + " – " + info.getDisplayName();
-            addSimButton(container, label, info.getSimSlotIndex());
+            int slot = info.getSimSlotIndex();
+            String label = "SIM " + (slot + 1) + " – " + info.getDisplayName();
+            addSimButton(container, label, slot);
         }
     }
 
@@ -71,6 +73,11 @@ public class MainActivity extends AppCompatActivity {
             i.putExtra(BandSelectActivity.EXTRA_SLOT, slotId);
             startActivity(i);
         });
+        LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT,
+                LinearLayout.LayoutParams.WRAP_CONTENT);
+        lp.setMargins(0, 8, 0, 8);
+        btn.setLayoutParams(lp);
         container.addView(btn);
     }
 }

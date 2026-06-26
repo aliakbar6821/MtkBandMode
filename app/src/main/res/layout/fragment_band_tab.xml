@@ -17,8 +17,7 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:text="All"
-            android:textSize="12sp"
-            style="@style/Widget.MaterialComponents.Button.OutlinedButton"/>
+            android:textSize="12sp"/>
 
         <Button
             android:id="@+id/btn_clear_all"
@@ -27,8 +26,7 @@
             android:layout_weight="1"
             android:layout_marginStart="4dp"
             android:text="None"
-            android:textSize="12sp"
-            style="@style/Widget.MaterialComponents.Button.OutlinedButton"/>
+            android:textSize="12sp"/>
 
         <Button
             android:id="@+id/btn_set"
