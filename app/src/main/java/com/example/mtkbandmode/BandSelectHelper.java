@@ -47,21 +47,21 @@ public class BandSelectHelper {
         SharedPreferences prefs = mContext.getSharedPreferences(
                 BandModeContent.PREF_NAME, Context.MODE_PRIVATE);
         prefs.edit()
-             .putLong(String.format(ratKey + "_low_%d",  mSlotId), lowMask)
-             .putLong(String.format(ratKey + "_high_%d", mSlotId), highMask)
+             .putLong(ratKey + "_low_" + mSlotId, lowMask)
+             .putLong(ratKey + "_high_" + mSlotId, highMask)
              .apply();
     }
 
     public long loadLow(String ratKey) {
         SharedPreferences prefs = mContext.getSharedPreferences(
                 BandModeContent.PREF_NAME, Context.MODE_PRIVATE);
-        return prefs.getLong(String.format(ratKey + "_low_%d", mSlotId), ~0L);
+        return prefs.getLong(ratKey + "_low_" + mSlotId, ~0L);
     }
 
     public long loadHigh(String ratKey) {
         SharedPreferences prefs = mContext.getSharedPreferences(
                 BandModeContent.PREF_NAME, Context.MODE_PRIVATE);
-        return prefs.getLong(String.format(ratKey + "_high_%d", mSlotId), ~0L);
+        return prefs.getLong(ratKey + "_high_" + mSlotId, ~0L);
     }
 
     // ── Apply via TelephonyManager hidden API ──────────────────────────────

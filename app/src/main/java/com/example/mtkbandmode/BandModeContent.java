@@ -3,26 +3,11 @@ package com.example.mtkbandmode;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-/**
- * Band constants reverse-engineered from BandModeContent.smali and BandSelect$BandModeMap.smali.
- *
- * The original MTK implementation stores selections as two longs (high/low 64-bit bitmasks)
- * retrieved from SharedPreferences with keys like "band_mode_gsm_<slotId>".
- * We replicate that exact layout so AT+EPBSE commands stay compatible.
- *
- * RatConfiguration masks (from final_deps.txt):
- *   GSM    = 0x01
- *   TDSCDMA= 0x02
- *   WCDMA  = 0x04  (UMTS)
- *   LteTdd = 0x08
- *   LteFdd = 0x10
- *   NR     = 0x40
- */
 public final class BandModeContent {
 
     private BandModeContent() {}
 
-    // ── GSM bands (bitmask stored in low 64 bits) ──────────────────────────
+    // ── GSM bands ──────────────────────────────────────────────────────────
     public static final Map<String, Long> GSM_BANDS = new LinkedHashMap<>();
     static {
         GSM_BANDS.put("GSM 850",   0x00000080L);
@@ -43,7 +28,7 @@ public final class BandModeContent {
         UMTS_BANDS.put("WCDMA B19 (850 JP)", 0x00040000L);
     }
 
-    // ── LTE bands (two longs: low = B1-B64, high = B65-B128) ──────────────
+    // ── LTE bands (low = B1-B64, high = B65+) ─────────────────────────────
     public static final Map<String, Long> LTE_BANDS_LOW = new LinkedHashMap<>();
     static {
         LTE_BANDS_LOW.put("LTE B1 (2100)",   1L);
@@ -71,12 +56,11 @@ public final class BandModeContent {
 
     public static final Map<String, Long> LTE_BANDS_HIGH = new LinkedHashMap<>();
     static {
-        LTE_BANDS_HIGH.put("LTE B66 (1700)",  1L << 1);   // B65 = bit0, B66 = bit1
-        LTE_BANDS_HIGH.put("LTE B71 (600)",   1L << 6);
+        LTE_BANDS_HIGH.put("LTE B66 (1700)", 1L << 1);
+        LTE_BANDS_HIGH.put("LTE B71 (600)",  1L << 6);
     }
 
     // ── NR (5G) bands ──────────────────────────────────────────────────────
-    // Stored as two longs, same scheme. NR band N = bit (N-1).
     public static final Map<String, Long> NR_BANDS_LOW = new LinkedHashMap<>();
     static {
         NR_BANDS_LOW.put("NR n1 (2100)",   1L);
@@ -92,23 +76,19 @@ public final class BandModeContent {
         NR_BANDS_LOW.put("NR n38 (TDD)",   1L << 37);
         NR_BANDS_LOW.put("NR n40 (TDD)",   1L << 39);
         NR_BANDS_LOW.put("NR n41 (TDD)",   1L << 40);
-        NR_BANDS_LOW.put("NR n66 (1700)",  1L << 60); // fits in low long
-        NR_BANDS_LOW.put("NR n71 (600)",   1L << 61);
         NR_BANDS_LOW.put("NR n77 (TDD)",   1L << 62);
         NR_BANDS_LOW.put("NR n78 (TDD)",   1L << 63);
     }
 
     public static final Map<String, Long> NR_BANDS_HIGH = new LinkedHashMap<>();
     static {
-        NR_BANDS_HIGH.put("NR n79 (TDD)",  1L);        // bit0 of high word = band 79
+        NR_BANDS_HIGH.put("NR n79 (TDD)", 1L);
     }
 
-    // ── SharedPreferences keys (matches originals from BandModeContent.smali) ──
-    public static final String PREF_NAME         = "band_mode";
-    public static final String KEY_GSM_LOW       = "band_mode_gsm_low_%d";
-    public static final String KEY_UMTS_LOW      = "band_mode_umts_low_%d";
-    public static final String KEY_LTE_LOW       = "band_mode_lte_low_%d";
-    public static final String KEY_LTE_HIGH      = "band_mode_lte_high_%d";
-    public static final String KEY_NR_LOW        = "band_mode_nr_low_%d";
-    public static final String KEY_NR_HIGH       = "band_mode_nr_high_%d";
+    // ── SharedPreferences base keys (slot id appended by BandSelectHelper) ─
+    public static final String PREF_NAME = "band_mode";
+    public static final String KEY_GSM   = "band_mode_gsm";
+    public static final String KEY_UMTS  = "band_mode_umts";
+    public static final String KEY_LTE   = "band_mode_lte";
+    public static final String KEY_NR    = "band_mode_nr";
 }

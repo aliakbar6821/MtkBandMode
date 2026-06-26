@@ -15,14 +15,10 @@ import androidx.fragment.app.Fragment;
 import java.util.HashMap;
 import java.util.Map;
 
-/**
- * Generic fragment that renders a list of band checkboxes for one RAT tab.
- * Instantiated with a Bundle containing the RAT type and slot id.
- */
 public class BandTabFragment extends Fragment {
 
-    public static final String ARG_RAT    = "rat";
-    public static final String ARG_SLOT   = "slot";
+    public static final String ARG_RAT  = "rat";
+    public static final String ARG_SLOT = "slot";
 
     public enum Rat { GSM, UMTS, LTE, NR }
 
@@ -30,14 +26,13 @@ public class BandTabFragment extends Fragment {
     private int mSlotId;
     private BandSelectHelper mHelper;
 
-    // CheckBoxes mapped to their bitmask contributions
     private final Map<CheckBox, Long> mLowBoxes  = new HashMap<>();
     private final Map<CheckBox, Long> mHighBoxes = new HashMap<>();
 
     public static BandTabFragment newInstance(Rat rat, int slotId) {
         BandTabFragment f = new BandTabFragment();
         Bundle b = new Bundle();
-        b.putString(ARG_RAT,  rat.name());
+        b.putString(ARG_RAT, rat.name());
         b.putInt(ARG_SLOT, slotId);
         f.setArguments(b);
         return f;
@@ -68,18 +63,18 @@ public class BandTabFragment extends Fragment {
 
         switch (mRat) {
             case GSM:
-                addBands(container, BandModeContent.GSM_BANDS, true, BandModeContent.KEY_GSM_LOW);
+                addBands(container, BandModeContent.GSM_BANDS,      true,  BandModeContent.KEY_GSM);
                 break;
             case UMTS:
-                addBands(container, BandModeContent.UMTS_BANDS, true, BandModeContent.KEY_UMTS_LOW);
+                addBands(container, BandModeContent.UMTS_BANDS,     true,  BandModeContent.KEY_UMTS);
                 break;
             case LTE:
-                addBands(container, BandModeContent.LTE_BANDS_LOW,  true,  BandModeContent.KEY_LTE_LOW);
-                addBands(container, BandModeContent.LTE_BANDS_HIGH, false, BandModeContent.KEY_LTE_HIGH);
+                addBands(container, BandModeContent.LTE_BANDS_LOW,  true,  BandModeContent.KEY_LTE);
+                addBands(container, BandModeContent.LTE_BANDS_HIGH, false, BandModeContent.KEY_LTE);
                 break;
             case NR:
-                addBands(container, BandModeContent.NR_BANDS_LOW,  true,  BandModeContent.KEY_NR_LOW);
-                addBands(container, BandModeContent.NR_BANDS_HIGH, false, BandModeContent.KEY_NR_HIGH);
+                addBands(container, BandModeContent.NR_BANDS_LOW,   true,  BandModeContent.KEY_NR);
+                addBands(container, BandModeContent.NR_BANDS_HIGH,  false, BandModeContent.KEY_NR);
                 break;
         }
 
@@ -89,8 +84,8 @@ public class BandTabFragment extends Fragment {
     }
 
     private void addBands(LinearLayout container, Map<String, Long> bands,
-                          boolean isLow, String prefKey) {
-        long saved = isLow ? mHelper.loadLow(prefKey) : mHelper.loadHigh(prefKey);
+                          boolean isLow, String ratKey) {
+        long saved = isLow ? mHelper.loadLow(ratKey) : mHelper.loadHigh(ratKey);
         for (Map.Entry<String, Long> entry : bands.entrySet()) {
             CheckBox cb = new CheckBox(requireContext());
             cb.setText(entry.getKey());
@@ -109,13 +104,11 @@ public class BandTabFragment extends Fragment {
         for (Map.Entry<CheckBox, Long> e : mHighBoxes.entrySet())
             if (e.getKey().isChecked()) highMask |= e.getValue();
 
-        String ratKey = ratPrefKey();
+        String ratKey = ratBaseKey();
         mHelper.saveBandSelection(ratKey, lowMask, highMask);
-
-        // Build a combined mask for TelephonyManager (low bits are enough for GSM/UMTS/LTE)
         mHelper.applyNetworkTypeMask(lowMask | (highMask << 32), new BandSelectHelper.Callback() {
-            @Override public void onSuccess(String message) { showStatus(message); }
-            @Override public void onError(String message)   { showStatus("⚠ " + message); }
+            @Override public void onSuccess(String message) { showStatus("✓ " + message); }
+            @Override public void onError(String message)   { showStatus("✗ " + message); }
         });
     }
 
@@ -127,16 +120,15 @@ public class BandTabFragment extends Fragment {
     private void showStatus(String msg) {
         View v = getView();
         if (v == null) return;
-        TextView tv = v.findViewById(R.id.tv_status);
-        tv.setText(msg);
+        ((TextView) v.findViewById(R.id.tv_status)).setText(msg);
     }
 
-    private String ratPrefKey() {
+    private String ratBaseKey() {
         switch (mRat) {
-            case GSM:  return "band_mode_gsm";
-            case UMTS: return "band_mode_umts";
-            case LTE:  return "band_mode_lte";
-            case NR:   return "band_mode_nr";
+            case GSM:  return BandModeContent.KEY_GSM;
+            case UMTS: return BandModeContent.KEY_UMTS;
+            case LTE:  return BandModeContent.KEY_LTE;
+            case NR:   return BandModeContent.KEY_NR;
             default:   return "band_mode_unknown";
         }
     }
