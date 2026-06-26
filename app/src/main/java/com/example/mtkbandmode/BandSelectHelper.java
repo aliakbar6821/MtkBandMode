@@ -4,7 +4,6 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.Handler;
 import android.os.Looper;
-import android.telephony.SubscriptionManager;
 import android.telephony.TelephonyManager;
 import android.util.Log;
 
@@ -218,12 +217,15 @@ public class BandSelectHelper {
     // ── Helpers ───────────────────────────────────────────────────────────
 
     private int getSubIdForSlot(int slotId) {
-        try {
-            int[] ids = SubscriptionManager.getSubId(slotId);
-            if (ids != null && ids.length > 0) return ids[0];
-        } catch (Exception e) {
-            Log.w(TAG, "getSubIdForSlot fallback to slotId=" + slotId, e);
-        }
-        return slotId;
+    try {
+        Class<?> smClass = Class.forName("android.telephony.SubscriptionManager");
+        Method m = smClass.getDeclaredMethod("getSubId", int.class);
+        m.setAccessible(true);
+        int[] ids = (int[]) m.invoke(null, slotId);
+        if (ids != null && ids.length > 0) return ids[0];
+    } catch (Exception e) {
+        Log.w(TAG, "getSubIdForSlot fallback to slotId=" + slotId, e);
     }
+    return slotId;
+}
 }
