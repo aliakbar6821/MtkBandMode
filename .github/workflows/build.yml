@@ -1,0 +1,63 @@
+name: Build APK
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+          cache: gradle
+
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
+
+      # ── Debug build (always) ─────────────────────────────────────────────
+      - name: Build Debug APK
+        run: ./gradlew assembleDebug --stacktrace
+
+      - name: Upload Debug APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: MtkBandMode-debug
+          path: app/build/outputs/apk/debug/*.apk
+          retention-days: 30
+
+      # ── Release build (optional – only when keystore secrets are set) ────
+      - name: Build Release APK
+        if: ${{ env.KEYSTORE_BASE64 != '' }}
+        env:
+          KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
+          KEY_ALIAS:       ${{ secrets.KEY_ALIAS }}
+          KEY_PASSWORD:    ${{ secrets.KEY_PASSWORD }}
+          STORE_PASSWORD:  ${{ secrets.STORE_PASSWORD }}
+        run: |
+          echo "$KEYSTORE_BASE64" | base64 --decode > release.keystore
+          ./gradlew assembleRelease \
+            -Pandroid.injected.signing.store.file="$(pwd)/release.keystore" \
+            -Pandroid.injected.signing.store.password="$STORE_PASSWORD" \
+            -Pandroid.injected.signing.key.alias="$KEY_ALIAS" \
+            -Pandroid.injected.signing.key.password="$KEY_PASSWORD"
+
+      - name: Upload Release APK
+        if: ${{ env.KEYSTORE_BASE64 != '' }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: MtkBandMode-release
+          path: app/build/outputs/apk/release/*.apk
+          retention-days: 30
+        env:
+          KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}

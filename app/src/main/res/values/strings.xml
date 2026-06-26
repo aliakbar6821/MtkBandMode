@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">MTK Band Mode</string>
+    <string name="BandSelect">Band Mode</string>
+    <string name="BandSel_GSM">GSM Mode</string>
+    <string name="BandSel_UMTS">UMTS Mode</string>
+    <string name="BandSel_LTE">LTE Mode</string>
+    <string name="BandSel_NR">NR Mode</string>
+    <string name="BandSel_SET">SET</string>
+    <string name="BandSel_RESET">Reset to default</string>
+    <string name="bandmode_LTE_hint">If you want to disable all FDD or all TDD LTE bands, disable the corresponding LTE duplex mode first!</string>
+</resources>
